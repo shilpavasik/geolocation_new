@@ -4,7 +4,11 @@
   <title>Station Entry Form with Map</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+
   <style>
     body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
     fieldset {
@@ -98,7 +102,7 @@
   <div id="mapControls">
     <label>Lat:</label>
     <input type="number" id="mapLat" step="any" placeholder="Decimal">
-    <label>Lng:</label>
+    <label>Long:</label>
     <input type="number" id="mapLng" step="any" placeholder="Decimal">
     <button onclick="goToPoint()">Go</button>
     <button onclick="submitLatLng()">Submit</button>
@@ -112,7 +116,10 @@
   <div id="mapContainer"></div>
 </div>
 
+<!-- Leaflet JS + Geocoder -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
 <script>
   function openMap() {
     document.getElementById('mapModal').style.display = 'block';
@@ -204,6 +211,35 @@
     }
     map.setView([23.5, 80], 5);
   }
+
+  // ✅ Search Bar
+  const geocoder = L.Control.geocoder({
+  defaultMarkGeocode: false,
+  position: 'topright'
+})
+.on('markgeocode', function(e) {
+  const latlng = e.geocode.center;
+
+  // Remove previous marker
+  if (marker) map.removeLayer(marker);
+
+  // Add new draggable marker
+  marker = L.marker(latlng, { draggable: true }).addTo(map);
+
+  // On drag, update input values
+  marker.on('dragend', function (e) {
+    const pos = e.target.getLatLng();
+    document.getElementById('mapLat').value = pos.lat.toFixed(6);
+    document.getElementById('mapLng').value = pos.lng.toFixed(6);
+  });
+
+  // Set lat/lng in input fields
+  document.getElementById('mapLat').value = latlng.lat.toFixed(6);
+  document.getElementById('mapLng').value = latlng.lng.toFixed(6);
+
+  map.setView(latlng, 14);
+})
+.addTo(map);
 </script>
 
 </body>
